@@ -15,8 +15,9 @@ cd ..
 
 for (( i=1 ; i<=$1 ; i++ )); do
 	clear
-	echo
-	./generator/target/fast/generator ${@:2} -s $(date +%s) >/dev/null
+	seed=$(date +%s)
+	echo -e "\x1b[1mSeed:\x1b[0m $seed"
+	./generator/target/fast/generator ${@:2} -s $seed >/dev/null
 	./solver/target/fast/solver
 	sleep 1
 done
