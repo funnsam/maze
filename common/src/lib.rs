@@ -1,3 +1,15 @@
+pub use serde::*;
+pub use postcard::{from_bytes, to_allocvec};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Maze {
+    pub size_x: usize,
+    pub size_y: usize,
+    pub goal_x: usize,
+    pub goal_y: usize,
+    pub grid: Vec<Vec<bool>>,
+}
+
 static mut RAND_SEED: u64 = 0;
 
 pub fn rand() -> u64 {

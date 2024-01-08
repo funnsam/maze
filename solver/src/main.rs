@@ -1,17 +1,6 @@
-use serde::*;
-use postcard::*;
+use common::*;
 
 mod a_star;
-mod utils;
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct Maze {
-    pub size_x: usize,
-    pub size_y: usize,
-    pub goal_x: usize,
-    pub goal_y: usize,
-    pub grid: Vec<Vec<bool>>,
-}
 
 fn main() {
     let maze = std::fs::read("maze.mz").unwrap();

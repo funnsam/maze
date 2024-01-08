@@ -1,8 +1,5 @@
 use clap::*;
-mod utils;
-use utils::*;
-use serde::*;
-use postcard::*;
+use common::*;
 
 #[derive(Debug, Clone, Parser)]
 struct Args {
@@ -44,15 +41,6 @@ fn generate_maze(args: &Args) -> (Vec<Vec<bool>>, (usize, usize)) {
     carve(0, 0, &mut grid, &mut max_depth, &mut max_cell, 0);
 
     (grid, max_cell)
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct Maze {
-    size_x: usize,
-    size_y: usize,
-    goal_x: usize,
-    goal_y: usize,
-    grid: Vec<Vec<bool>>,
 }
 
 fn main() {

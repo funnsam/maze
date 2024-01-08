@@ -1,4 +1,5 @@
-use crate::{*, utils::*};
+use crate::*;
+use std::collections::HashMap;
 use priority_queue::priority_queue::PriorityQueue;
 
 fn reconstruct(came_from: &Vec<Vec<Option<(usize, usize)>>>, mut current: (usize, usize)) -> Vec<(usize, usize)> {
@@ -17,12 +18,12 @@ pub fn solve(maze: &Maze) -> Option<Vec<(usize, usize)>> {
         let dx = maze.goal_x - x;
         let dy = maze.goal_y - y;
         // ((dx*dx + dy*dy) as f32).sqrt() as usize
-        dx*dx + dy*dy
+        (((dx*dx + dy*dy) as f32).sqrt() * 8.0) as usize
     };
 
     let mut open = PriorityQueue::with_capacity(1);
 
-    let mut closed = Vec::new();
+    let mut closed = HashMap::new();
 
     open.push((0, 0), usize::MAX - h((0, 0)));
 
@@ -33,15 +34,15 @@ pub fn solve(maze: &Maze) -> Option<Vec<(usize, usize)>> {
 
     let mut came_from = vec![vec![None; maze.size_x]; maze.size_y];
 
-    while let Some((current, _)) = open.pop() {
-        closed.push(current);
+    while let Some((current, f)) = open.pop() {
+        closed.insert(current, f);
 
         if current.0 == maze.goal_x && current.1 == maze.goal_y {
             return Some(reconstruct(&came_from, current));
         }
 
         for n in Neighbour::at(&current, &maze) {
-            let t_g = g_score[current.1][current.0] + 1;
+            let t_g = g_score[current.1][current.0] + 6;
 
             if t_g < g_score[n.1][n.0] {
                 came_from[n.1][n.0] = Some(current);
@@ -96,22 +97,33 @@ impl Neighbour {
     }
 }
 
-pub fn print_grid(grid: &Vec<Vec<bool>>, open: &[(usize, usize)], closed: &[(usize, usize)], end: &(usize, usize)) {
+pub fn print_grid(grid: &Vec<Vec<bool>>, open: &[(usize, usize)], closed: &HashMap<(usize, usize), usize>, end: &(usize, usize)) {
+    let min = closed.values().map(|a| usize::MAX - *a).min().unwrap_or(1);
+    let max = closed.values().map(|a| usize::MAX - *a).max().unwrap_or(1) - min;
+
+    let snap = |x| {
+        (((x - min) as f32 / max as f32) * 95.0) as usize
+    };
+
     for (yi, y) in grid.iter().enumerate() {
         println!("|{}\x1b[0m|", y.iter().enumerate()
             .map(|(x, a)|
                 if x + yi == 0 {
-                    "\x1b[101m  "
+                    "\x1b[101m  ".to_string()
                 } else if x == end.0 && yi == end.1 {
-                    "\x1b[102m  "
+                    "\x1b[102m  ".to_string()
                 } else if open.contains(&(x, yi)) {
-                    "\x1b[0;33m▓▓"
-                } else if closed.contains(&(x, yi)) {
-                    "\x1b[0;34m▓▓"
+                    "\x1b[0;94m▓▓".to_string()
+                } else if let Some(s) = closed.get(&(x, yi)) {
+                    format!(
+                        "\x1b[0;48;2;{};{};0m  ",
+                        snap(usize::MAX - *s),
+                        95 - snap(usize::MAX - *s)
+                    )
                 } else if *a {
-                    "\x1b[107m  "
+                    "\x1b[107m  ".to_string()
                 } else {
-                    "\x1b[0m  "
+                    "\x1b[0m  ".to_string()
                 }
             )
             .collect::<String>()
